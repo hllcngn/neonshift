@@ -40,7 +40,7 @@ If the 'painting' file exists upon launch, it is loaded.
 
 ### demo:
 
-![demo ascii](https://raw.githubusercontent.com/d0pelrh/neonshift/main/demo_ascii.png)
+![demo ascii](https://raw.githubusercontent.com/hllcngn/neonshift/main/demo_ascii.png)
 
 ### known issues:
 
