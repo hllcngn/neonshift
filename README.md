@@ -1,7 +1,7 @@
 ### NEONSHIFT ASCII
 
 **ASCII Painter for the terminal / Speedpainting brain interface**\
-**Prototype No1**
+**Prototype No1**\
 **Now expanded with new random functionalities & polish!**
 
 ## Supports 2 colors!
