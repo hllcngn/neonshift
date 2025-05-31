@@ -31,11 +31,17 @@
 #define unsetf(x, y) x&~y
 #define switchf(x,y) (F(x,y)?unsetf(x,y):setf(x,y))
 
+void toogle_z(unsigned char *edt_mod, WINDOW *wui);
+void toogle_o(unsigned char *edt_mod, WINDOW *wui);
+void toogle_i(unsigned char *edt_mod, WINDOW *wui);
+void toogle_r(unsigned char *mov_mod, WINDOW *wui);
+void toogle_v(unsigned char *mov_mod, WINDOW *wui);
+
 int		change_color(char color, WINDOW *win, WINDOW *wui);
 struct vect	get_mov_v(unsigned char *mov_mod);
 void		move_curs(struct vect *c, struct ptng *p,
 			struct vect v);
-void		edit_pntg(WINDOW *win, struct vect *c, struct ptng *p,
+void		edit_pntg(WINDOW *win, WINDOW *wui, struct vect *c, struct ptng *p,
 			unsigned char *edt_mod, char color);
 
 #endif

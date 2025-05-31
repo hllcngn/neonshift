@@ -8,12 +8,11 @@
 void	title_quit(){ endwin(); exit(EXIT_SUCCESS);}
 
 
-
 int	main(int ac, char **av){
 initscr(); cbreak(); noecho();
 nodelay(stdscr, TRUE);
 start_color(); //curs_set(0);
-srand(time(NULL));// random expansion
+srand(time(NULL)); //random expansion
 
 WINDOW		*win, *wui;
 struct ptng	ptng;
@@ -23,7 +22,7 @@ char		color, overall_color, q, c;
 int		refresh_rate, fps;
 clock_t		clk_start, clk;
 FILE		*file;
-//char	z = 'z';
+
 ptng.w = BASE_W; ptng.h = BASE_H; ptng.size = ptng.w*ptng.h;
 curs.y = ptng.h-1; curs.x = ptng.w-1;
 mov_mod = 2; edt_mod = 0; color = 2; q = 1;
@@ -60,10 +59,7 @@ while ((c=getch())==ERR);
 if (c == 'q') title_quit();
 
 win = newwin(ptng.h+2, ptng.w+2, 3, 7);		//setup
-//init_pair(69, 10, 0);
-//if (overall_color == 'g')
 wattron(win, COLOR_PAIR(1));
-//else wattron(win, COLOR_PAIR(69));
 box(win, 0, 0); wrefresh(win); delwin(win);
 win = newwin(ptng.h, ptng.w, 4, 8);
 wui = newwin(20, 10, 4, 9+ptng.w+5);
@@ -118,25 +114,15 @@ case '+': fps++; refresh_rate = CLOCKS_PER_SEC/fps;
 	 mvwprintw(wui, 8, 5, "%i  ", fps);
 	 wrefresh(wui); break;
 
-case 'z': edt_mod = switchf(edt_mod, EZ);
-	  mvwprintw(wui, 0, 0, ((Z(edt_mod) && !O(edt_mod))?"editing":"       "));
-	  wrefresh(wui); break;
-case ';': edt_mod = switchf(edt_mod, E1);
-	  mvwprintw(wui, 2, 0, (O(edt_mod)?"spot  ":"stroke"));
-	  wrefresh(wui); break;
-case 'p': edt_mod = switchf(edt_mod, EI);
-	  mvwprintw(wui, 3, 0, (I(edt_mod)?"invert":"      "));
-	  wrefresh(wui); break;
+case 'z': toogle_z(&edt_mod, wui); break;
+case ';': toogle_o(&edt_mod, wui); break;
+case 'p': toogle_i(&edt_mod, wui); break;
 
 case ' ': mov_mod = switchf(mov_mod, MP);
 	  mvwprintw(wui, 10, 0, (P(mov_mod)?"*PAUSED* ":"sweeping:"));
 	  wrefresh(wui); break;
-case 'b': mov_mod = switchf(mov_mod, MR);
-	  mvwprintw(wui, 11, 0, (R(mov_mod)?"reversed":"normal  "));
-	  wrefresh(wui); break;
-case 'g': mov_mod = switchf(mov_mod, MV);
-	  mvwprintw(wui, 12, 0, (V(mov_mod)?"vertical":"        "));
-	  wrefresh(wui); break;
+case 'b': toogle_r(&mov_mod, wui); break;
+case 'g': toogle_v(&mov_mod, wui); break;
 
 case 'h': mov_mod = switchf(mov_mod, MH); break;
 case 'j': mov_mod = switchf(mov_mod, MJ); break;
@@ -149,37 +135,36 @@ case 'w': //random position
 	curs.x = rand()%BASE_W;
 	break;
 case 'e': //random sweeping direction
-	(rand()%2)?mov_mod = switchf(mov_mod, MV):1;
-	(rand()%2)?mov_mod = switchf(mov_mod, MR):1;
+	(rand()%2)?toogle_r(&mov_mod, wui):1;
+	(rand()%2)?toogle_v(&mov_mod, wui):1;
 	break;
 case 'r': //random position & sweeping direction
-	(rand()%2)?mov_mod = switchf(mov_mod, MV):1;
-	(rand()%2)?mov_mod = switchf(mov_mod, MR):1;
+	(rand()%2)?toogle_r(&mov_mod, wui):1;
+	(rand()%2)?toogle_v(&mov_mod, wui):1;
 	curs.y = rand()%BASE_H;
 	curs.x = rand()%BASE_W;
 	break;
 case 't': //random spot
 	curs.y = rand()%BASE_H;
 	curs.x = rand()%BASE_W;
-	if (!O(edt_mod)){
-		edt_mod = switchf(edt_mod, E1);
-		mvwprintw(wui, 1, 0, (O(edt_mod)?"spot  ":"stroke"));
-		wrefresh(wui);}
-	edt_mod = switchf(edt_mod, EZ);
+	unsigned char i = edt_mod;
+	if (!O(edt_mod))
+		toogle_o(&edt_mod, wui);
+	if (!Z(edt_mod))
+		edt_mod = switchf(edt_mod, EZ);
+	edit_pntg(win, wui, &curs, &ptng, &edt_mod, color);
+	if (!O(i))
+		toogle_o(&edt_mod, wui);
 	break;
 case 'y': //randomize edit mode
-	(rand()%2)?edt_mod = switchf(edt_mod, E1):1;
-	mvwprintw(wui, 1, 0, (O(edt_mod)?"spot  ":"stroke"));
-	wrefresh(wui);
-	(rand()%2)?edt_mod = switchf(edt_mod, EI):1;
-	mvwprintw(wui, 2, 0, (I(edt_mod)?"invert":"      "));
-	wrefresh(wui);
+	(rand()%2)?toogle_o(&edt_mod, wui):1;
+	(rand()%2)?toogle_i(&edt_mod, wui):1;
 	break;
 default: break;}}
 
 mov_v = get_mov_v(&mov_mod);
 move_curs(&curs, &ptng, mov_v);
-edit_pntg(win, &curs, &ptng, &edt_mod, color);
+edit_pntg(win, wui, &curs, &ptng, &edt_mod, color);
 
 wrefresh(win);
 clk = clock()-clk_start;
@@ -189,5 +174,26 @@ clk_start = clock();	/* ================== */	}	/*====*/
 free(ptng.buf);
 delwin(win); delwin(wui); endwin();
 return 0;}
+
+void toogle_z(unsigned char *edt_mod, WINDOW *wui){
+*edt_mod = switchf(*edt_mod, EZ);
+mvwprintw(wui, 0, 0, ((Z(*edt_mod) && !O(*edt_mod))?"editing":"       "));
+wrefresh(wui);}
+void toogle_o(unsigned char *edt_mod, WINDOW *wui){
+*edt_mod = switchf(*edt_mod, E1);
+mvwprintw(wui, 2, 0, (O(*edt_mod)?"spot  ":"stroke"));
+wrefresh(wui);}
+void toogle_i(unsigned char *edt_mod, WINDOW *wui){
+*edt_mod = switchf(*edt_mod, EI);
+mvwprintw(wui, 3, 0, (I(*edt_mod)?"invert":"      "));
+wrefresh(wui);}
+void toogle_r(unsigned char *mov_mod, WINDOW *wui){
+*mov_mod = switchf(*mov_mod, MR);
+mvwprintw(wui, 11, 0, (R(*mov_mod)?"reversed":"normal  "));
+wrefresh(wui);}
+void toogle_v(unsigned char *mov_mod, WINDOW *wui){
+*mov_mod = switchf(*mov_mod, MV);
+mvwprintw(wui, 12, 0, (V(*mov_mod)?"vertical":"        "));
+wrefresh(wui);}
 
 //by d0pelrh

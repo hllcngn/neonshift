@@ -47,12 +47,12 @@ void	move_curs(struct vect *c, struct ptng *p, struct vect v){
 	else if (v.x==1) c->x++;
 return;}
 
-void	edit_pntg(WINDOW *win, struct vect *c, struct ptng *p,
+void	edit_pntg(WINDOW *win, WINDOW *wui, struct vect *c, struct ptng *p,
 		unsigned char *edt_mod, char color){
 	int	bi = c->y*p->w+c->x;
 	wmove(win, c->y, c->x);
 	if (Z(*edt_mod)){
-		if (O(*edt_mod)) *edt_mod = switchf(*edt_mod, EZ);
+		if (O(*edt_mod)) toogle_z(edt_mod, wui);
 		if (!I(*edt_mod)){
 			if (color == 1) p->buf[bi] = 0;
 			else if (color == 2) p->buf[bi] = 1;
