@@ -57,8 +57,7 @@ void	edit_pntg(WINDOW *win, struct vect *c, struct ptng *p,
 			if (color == 1) p->buf[bi] = 0;
 			else if (color == 2) p->buf[bi] = 1;
 			waddch(win, ' ');}
-		else{
-			if (p->buf[bi] == 0){
+		else{	if (p->buf[bi] == 0){
 				p->buf[bi] = 1;
 				wattron(win, COLOR_PAIR(2));}
 			else if (p->buf[bi] == 1){
