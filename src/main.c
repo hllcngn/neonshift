@@ -7,7 +7,6 @@
 
 void	title_quit(){ endwin(); exit(EXIT_SUCCESS);}
 
-
 int	main(int ac, char **av){
 initscr(); cbreak(); noecho();
 nodelay(stdscr, TRUE);
@@ -28,23 +27,25 @@ curs.y = ptng.h-1; curs.x = ptng.w-1;
 mov_mod = 2; edt_mod = 0; color = 2; q = 1;
 fps = BASE_FPS; refresh_rate = CLOCKS_PER_SEC/fps;
 
-init_pair(10, 14, 0); refresh();	//title screens
+init_pair(10, 14, 0); refresh();	//title screen
 attron(COLOR_PAIR(10)|A_BOLD);
 mvprintw((ptng.h+2+3+1)/2-6, (ptng.w+2+7+4)/2-25/2,
 		"N   E   O   N   S   H   I   F   T");
-mvprintw((ptng.h+2+3+1)/2-6+1, (ptng.w+2+7+4)/2-17/2-5,
+mvprintw((ptng.h+2+3+1)/2-6+2, (ptng.w+2+7+4)/2-17/2-5,
 		"ASCII speedpainting brain interface");
 mvprintw((ptng.h+2+3+1)/2-6+3, (ptng.w+2+7+4)/2-2,
 		"prototype no1");
+mvprintw((ptng.h+2+3+1)/2-6+4, (ptng.w+2+7+4)/2-3,
+		"expanded edition");
 mvprintw((ptng.h+2+3+1)/2-6+6, (ptng.w+2+7+4)/2-6,
 		"Green           Red");
 attron(A_UNDERLINE);
 mvaddch((ptng.h+2+3+1)/2-6+6, (ptng.w+2+7+4)/2-6, 'G');
 mvaddch((ptng.h+2+3+1)/2-6+6, (ptng.w+2+7+4)/2-6+16, 'R');
-move((ptng.h+2+3+1)/2-6+1, (ptng.w+2+7+4)/2-17/2-2+32);
+move((ptng.h+2+3+1)/2-6+2, (ptng.w+2+7+4)/2-17/2-2+32);
 attroff(A_UNDERLINE); attroff(A_BOLD); refresh();
 c = 1; while (c&&(c=getch())){ switch(c){
-	case 'q': title_quit(); break;
+	case 27: if (getch()==ERR) title_quit(); break;
 	case 'g': init_pair(1, 10, 0); //black
 		init_pair(2, 0, 10); //green
 		overall_color = 'g'; c = 0; break;
@@ -52,11 +53,6 @@ c = 1; while (c&&(c=getch())){ switch(c){
 		init_pair(2, 0, 9); //red
 		overall_color = 'r'; c = 0; break;
 	default: break;}}
-erase(); attron(COLOR_PAIR(1));
-mvprintw((ptng.h+2+3+1)/2-6+3, (ptng.w+2+7+4)/2-2,
-		"to darkmage"); refresh();
-while ((c=getch())==ERR);
-if (c == 'q') title_quit();
 
 win = newwin(ptng.h+2, ptng.w+2, 3, 7);		//setup
 wattron(win, COLOR_PAIR(1));
@@ -75,13 +71,14 @@ ptng.buf = (char *)malloc(ptng.size);
 if ((file=fopen("painting", "r"))) { int i=0;
 	while ((c=fgetc(file)) != EOF){
 		c = fgetc(file); switch(c){
-		case '9': case '4': ptng.buf[i] = 0;
-			wattron(win, COLOR_PAIR(1));
-			waddch(win, ' '); break;
+		case '9':
+		case '4': ptng.buf[i] = 0;
+			  wattron(win, COLOR_PAIR(1));
+			  waddch(win, ' '); break;
 		case '1': ptng.buf[i] = 1;
-			wattron(win, COLOR_PAIR(2));
-			waddch(win, ' '); break;
-		defautl: break;}  i++;
+			  wattron(win, COLOR_PAIR(2));
+			  waddch(win, ' '); break;
+		defautl:  break;}  i++;
 		fgetc(file); fgetc(file); fgetc(file);
 		if (!(i%ptng.w)) fgetc(file);}
 	fclose(file); wrefresh(win);}
@@ -92,37 +89,43 @@ clk_start = clock();
 /* ========================== */	while (q){	/*====*/
 
 if ((c=getch())!=ERR){ switch(c){
-case 27: if (getch()==ERR) q = 0; break; //TODO: add confirm window
-case 's': file = fopen("painting", "w");
-	for (int i=0; i<ptng.size; i++){ switch(ptng.buf[i]){
-		case 0: fputc(3, file);	//black
-			if (overall_color == 'g') fprintf(file, "9,1 ");
-			else fprintf(file, "4,1 "); break;
-		case 1: fputc(3, file); //green/red
-			if (overall_color == 'g') fprintf(file, "1,9 ");
-			else fprintf(file, "1,4 "); break;
-		default: break;}
-		if (i && !((i+1)%ptng.w)) fputc('\n', file);}
-	fclose(file); break;
+case 27: if (getch()!=ERR) break;
+	{WINDOW *qwin = newwin(8, 30, 3+(ptng.h+2)/2-8/2, 7+(ptng.w+2)/2-30/2);
+	wattron(qwin, COLOR_PAIR(1)); box(qwin, 0, 0);
+	mvwprintw(qwin, 8/2-2, 30/2-20/2, "save before exiting?");
+	mvwprintw(qwin, 8/2+1, 30/2-19/2, "(Y/s - n/q/* - ESC)");
+	wrefresh(qwin);
+	c = 1; while (c&&(c=getch())){ switch(c){
+	case 27:  if (getch()==ERR) c = 0; break;
+	case ERR: break;
+	case '\n':
+	case 'y':
+	case 's': save_ptng(&ptng, overall_color); c = 0; q = 0; break;
+	case 'n':
+	case 'q':
+	default:  c = 0; q = 0; break;}}
+	delwin(qwin);} redraw_ptng(win, &curs, &ptng, color);
+	clk_start = clock(); break;
+case 's': save_ptng(&ptng, overall_color); break;
+
+case '-': if(fps>1) fps--; refresh_rate = CLOCKS_PER_SEC/fps;
+	  mvwprintw(wui, 8, 5, "%i  ", fps);
+	  wrefresh(wui); break;
+case '+': fps++; refresh_rate = CLOCKS_PER_SEC/fps;
+	  mvwprintw(wui, 8, 5, "%i  ", fps);
+	  wrefresh(wui); break;
 
 case 'c': if (color == 2) color = 1; else color = 2;
-	change_color(color, win, wui); break;
-case '-': if(fps>1) fps--; refresh_rate = CLOCKS_PER_SEC/fps;
-	 mvwprintw(wui, 8, 5, "%i  ", fps);
-	 wrefresh(wui); break;
-case '+': fps++; refresh_rate = CLOCKS_PER_SEC/fps;
-	 mvwprintw(wui, 8, 5, "%i  ", fps);
-	 wrefresh(wui); break;
-
+	  change_color(color, win, wui); break;
 case 'z': toogle_z(&edt_mod, wui); break;
 case ';': toogle_o(&edt_mod, wui); break;
 case 'p': toogle_i(&edt_mod, wui); break;
 
+case 'b': toogle_r(&mov_mod, wui); break;
+case 'g': toogle_v(&mov_mod, wui); break;
 case ' ': mov_mod = switchf(mov_mod, MP);
 	  mvwprintw(wui, 10, 0, (P(mov_mod)?"*PAUSED* ":"sweeping:"));
 	  wrefresh(wui); break;
-case 'b': toogle_r(&mov_mod, wui); break;
-case 'g': toogle_v(&mov_mod, wui); break;
 
 case 'h': mov_mod = switchf(mov_mod, MH); break;
 case 'j': mov_mod = switchf(mov_mod, MJ); break;
@@ -147,14 +150,14 @@ case 'r': //random position & sweeping direction
 case 't': //random spot
 	curs.y = rand()%BASE_H;
 	curs.x = rand()%BASE_W;
-	unsigned char i = edt_mod;
+	{unsigned char i = edt_mod;
 	if (!O(edt_mod))
 		toogle_o(&edt_mod, wui);
 	if (!Z(edt_mod))
 		edt_mod = switchf(edt_mod, EZ);
 	edit_pntg(win, wui, &curs, &ptng, &edt_mod, color);
 	if (!O(i))
-		toogle_o(&edt_mod, wui);
+		toogle_o(&edt_mod, wui);}
 	break;
 case 'y': //randomize edit mode
 	(rand()%2)?toogle_o(&edt_mod, wui):1;
@@ -174,26 +177,5 @@ clk_start = clock();	/* ================== */	}	/*====*/
 free(ptng.buf);
 delwin(win); delwin(wui); endwin();
 return 0;}
-
-void toogle_z(unsigned char *edt_mod, WINDOW *wui){
-*edt_mod = switchf(*edt_mod, EZ);
-mvwprintw(wui, 0, 0, ((Z(*edt_mod) && !O(*edt_mod))?"editing":"       "));
-wrefresh(wui);}
-void toogle_o(unsigned char *edt_mod, WINDOW *wui){
-*edt_mod = switchf(*edt_mod, E1);
-mvwprintw(wui, 2, 0, (O(*edt_mod)?"spot  ":"stroke"));
-wrefresh(wui);}
-void toogle_i(unsigned char *edt_mod, WINDOW *wui){
-*edt_mod = switchf(*edt_mod, EI);
-mvwprintw(wui, 3, 0, (I(*edt_mod)?"invert":"      "));
-wrefresh(wui);}
-void toogle_r(unsigned char *mov_mod, WINDOW *wui){
-*mov_mod = switchf(*mov_mod, MR);
-mvwprintw(wui, 11, 0, (R(*mov_mod)?"reversed":"normal  "));
-wrefresh(wui);}
-void toogle_v(unsigned char *mov_mod, WINDOW *wui){
-*mov_mod = switchf(*mov_mod, MV);
-mvwprintw(wui, 12, 0, (V(*mov_mod)?"vertical":"        "));
-wrefresh(wui);}
 
 //by d0pelrh

@@ -4,7 +4,7 @@
 int	change_color(char color, WINDOW *win, WINDOW *wui){
 	wattron(win, COLOR_PAIR(color));
 	wattron(wui, COLOR_PAIR(color));
-	mvwprintw(wui, 4, 0, "c c c\nc c c");
+	mvwprintw(wui, 5, 0, "c c c\nc c c");
 	wrefresh(wui); wattron(wui, COLOR_PAIR(1));
 return 0;}
 
@@ -44,8 +44,7 @@ void	move_curs(struct vect *c, struct ptng *p, struct vect v){
 	else if (v.y==-1) c->y--;
 	else if (v.y==1) c->y++;
 	else if (v.x==-1) c->x--;
-	else if (v.x==1) c->x++;
-return;}
+	else if (v.x==1) c->x++;}
 
 void	edit_pntg(WINDOW *win, WINDOW *wui, struct vect *c, struct ptng *p,
 		unsigned char *edt_mod, char color){
@@ -65,7 +64,52 @@ void	edit_pntg(WINDOW *win, WINDOW *wui, struct vect *c, struct ptng *p,
 				wattron(win, COLOR_PAIR(1));}
 			waddch(win, ' ');
 			wattron(win, COLOR_PAIR(color));}
-		wmove(win, c->y, c->x);}
-return;}
+		wmove(win, c->y, c->x);}}
+
+void	redraw_ptng(WINDOW *win, struct vect *c, struct ptng *p, char color){
+	for (int i = 0; i<p->h; i++){
+		wmove(win, i, 0);
+		for (int j = 0; j<p->w; j++){
+			(p->buf[i*p->w+j]?
+			wattron(win, COLOR_PAIR(2)):
+			wattron(win, COLOR_PAIR(1)));
+			waddch(win, ' ');}}
+	wattron(win, COLOR_PAIR(color));
+	wmove(win, c->y, c->x);
+	wrefresh(win);}
+
+void	save_ptng(struct ptng *ptng, char overall_color){
+	FILE *file = fopen("painting", "w");
+	for (int i=0; i<ptng->size; i++){ switch(ptng->buf[i]){
+		case 0: fputc(3, file);	//black
+			if (overall_color == 'g') fprintf(file, "9,1 ");
+			else fprintf(file, "4,1 "); break;
+		case 1: fputc(3, file); //green/red
+			if (overall_color == 'g') fprintf(file, "1,9 ");
+			else fprintf(file, "1,4 "); break;
+		default: break;}
+		if (i && !((i+1)%ptng->w)) fputc('\n', file);}
+	fclose(file);}
+
+void toogle_z(unsigned char *edt_mod, WINDOW *wui){
+*edt_mod = switchf(*edt_mod, EZ);
+mvwprintw(wui, 0, 0, ((Z(*edt_mod) && !O(*edt_mod))?"editing":"       "));
+wrefresh(wui);}
+void toogle_o(unsigned char *edt_mod, WINDOW *wui){
+*edt_mod = switchf(*edt_mod, E1);
+mvwprintw(wui, 2, 0, (O(*edt_mod)?"spot  ":"stroke"));
+wrefresh(wui);}
+void toogle_i(unsigned char *edt_mod, WINDOW *wui){
+*edt_mod = switchf(*edt_mod, EI);
+mvwprintw(wui, 3, 0, (I(*edt_mod)?"invert":"      "));
+wrefresh(wui);}
+void toogle_r(unsigned char *mov_mod, WINDOW *wui){
+*mov_mod = switchf(*mov_mod, MR);
+mvwprintw(wui, 11, 0, (R(*mov_mod)?"reversed":"normal  "));
+wrefresh(wui);}
+void toogle_v(unsigned char *mov_mod, WINDOW *wui){
+*mov_mod = switchf(*mov_mod, MV);
+mvwprintw(wui, 12, 0, (V(*mov_mod)?"vertical":"        "));
+wrefresh(wui);}
 
 //by d0pelrh
