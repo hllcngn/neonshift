@@ -147,7 +147,11 @@ case 'r': //random position & sweeping direction
 	curs.y = rand()%BASE_H;
 	curs.x = rand()%BASE_W;
 	break;
-case 't': //random spot
+case 't': //randomize edit mode
+	(rand()%2)?toogle_o(&edt_mod, wui):1;
+	(rand()%2)?toogle_i(&edt_mod, wui):1;
+	break;
+case 'y': //random spot
 	curs.y = rand()%BASE_H;
 	curs.x = rand()%BASE_W;
 	{unsigned char i = edt_mod;
@@ -158,10 +162,6 @@ case 't': //random spot
 	edit_pntg(win, wui, &curs, &ptng, &edt_mod, color);
 	if (!O(i))
 		toogle_o(&edt_mod, wui);}
-	break;
-case 'y': //randomize edit mode
-	(rand()%2)?toogle_o(&edt_mod, wui):1;
-	(rand()%2)?toogle_i(&edt_mod, wui):1;
 	break;
 default: break;}}
 

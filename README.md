@@ -2,6 +2,7 @@
 
 **ASCII Painter for the terminal / Speedpainting brain interface**\
 **Prototype No1**
+**Now expanded with new random functionalities & polish!**
 
 ## Supports 2 colors!
 
@@ -28,10 +29,17 @@ make
 **p** : invert
 
 **functional**\
-**q** : quit\
+**ESC** : quit\
 **s** : save\
 /!\ Neonshift prototype saves to the 'painting' file only. If you want to keep your stuff, you need to copy that file.\
 If the 'painting' file exists upon launch, it is loaded.
+
+**random expansion**\
+**w** : jump to random position\
+**e** : randomize sweeping direction\
+**r** : random position & sweeping direction\
+**t** : randomize edit mode\
+**y** : random spot
 
 ### notes:
 
@@ -41,6 +49,7 @@ If the 'painting' file exists upon launch, it is loaded.
 ### demo:
 
 ![demo ascii](https://raw.githubusercontent.com/hllcngn/neonshift/main/demo_ascii.png)
+![expansion demo ascii](https://raw.githubusercontent.com/hllcngn/neonshift/main/expansion_demo_ascii.png)
 
 ### known issues:
 
