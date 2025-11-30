@@ -1,9 +1,11 @@
 #include <ncurses.h>
-#include <stdlib.h> //malloc
-#include <time.h> //CLOCKS_PER_SEC clock
-#include <unistd.h> //usleep
-#include "struct.h" //structs: curs ptng, constants
-#include "modes.h" //constants, macros, functioning
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include <string.h>
+#include "struct.h"	//structs: curs, ptng, constants
+#include "neonshift.h"	//constants, macros, functioning
+//#include "conf.h"	//file name, path
 
 void	title_quit(){ endwin(); exit(EXIT_SUCCESS);}
 
@@ -67,8 +69,11 @@ wattron(wui, COLOR_PAIR(color));
 mvwprintw(wui, 5, 0, "c c c\nc c c\n\n");
 wrefresh(wui); wattron(wui, COLOR_PAIR(1));
 
+
+// move to its own function in func.c
 ptng.buf = (char *)malloc(ptng.size);
-if ((file=fopen("painting", "r"))) { int i=0;
+char *filename = get_filename();
+if ((file=fopen(filename, "r"))) { int i=0;
 	while ((c=fgetc(file)) != EOF){
 		c = fgetc(file); switch(c){
 		case '9':
@@ -83,6 +88,7 @@ if ((file=fopen("painting", "r"))) { int i=0;
 		if (!(i%ptng.w)) fgetc(file);}
 	fclose(file); wrefresh(win);}
 else for (int i=0; i<ptng.size; i++) ptng.buf[i] = 0;
+free(filename);
 
 wattron(win, COLOR_PAIR(color));
 clk_start = clock();

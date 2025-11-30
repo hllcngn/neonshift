@@ -38,6 +38,7 @@ void		move_curs(struct vect *c, struct ptng *p,
 void		edit_pntg(WINDOW *win, WINDOW *wui, struct vect *c, struct ptng *p,
 			unsigned char *edt_mod, char color);
 void		redraw_ptng(WINDOW *win, struct vect *c, struct ptng *p, char color);
+char*	get_filename();
 void		save_ptng(struct ptng *ptng, char color);
 
 void toogle_z(unsigned char *edt_mod, WINDOW *wui);

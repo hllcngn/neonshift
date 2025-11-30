@@ -1,5 +1,8 @@
 #include <ncurses.h>
-#include "modes.h"
+#include <string.h>
+#include <stdlib.h>
+#include "neonshift.h"
+#include "conf.h"
 
 int	change_color(char color, WINDOW *win, WINDOW *wui){
 	wattron(win, COLOR_PAIR(color));
@@ -78,8 +81,17 @@ void	redraw_ptng(WINDOW *win, struct vect *c, struct ptng *p, char color){
 	wmove(win, c->y, c->x);
 	wrefresh(win);}
 
+char*	get_filename(){
+char *filename = malloc(100);
+filename[0] = 0;
+strcat(filename, getenv("HOME"));
+strcat(filename, FILEPATH);
+strcat(filename, FILENAME);
+return filename;}
+
 void	save_ptng(struct ptng *ptng, char overall_color){
-	FILE *file = fopen("painting", "w");
+	char *filename = get_filename();
+	FILE *file = fopen(filename, "w");
 	for (int i=0; i<ptng->size; i++){ switch(ptng->buf[i]){
 		case 0: fputc(3, file);	//black
 			if (overall_color == 'g') fprintf(file, "9,1 ");
@@ -89,7 +101,7 @@ void	save_ptng(struct ptng *ptng, char overall_color){
 			else fprintf(file, "1,4 "); break;
 		default: break;}
 		if (i && !((i+1)%ptng->w)) fputc('\n', file);}
-	fclose(file);}
+	fclose(file); free(filename);}
 
 void toogle_z(unsigned char *edt_mod, WINDOW *wui){
 *edt_mod = switchf(*edt_mod, EZ);
